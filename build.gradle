@@ -1,0 +1,47 @@
+plugins {
+    // 1. Plugins principales de Spring Boot y Java
+    id 'java'
+    id 'org.springframework.boot' version '3.5.7' // Versión del parent de tu POM
+    id 'io.spring.dependency-management' version '1.1.5' // Para gestionar versiones de Spring
+}
+
+group = 'com.mercadolibre'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17' // Versión de Java de tu POM
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // === DEPENDENCIAS DE PRODUCCIÓN ===
+
+    // Nivel 2: API REST
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Nivel 3: Persistencia JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Nivel 3: Base de Datos H2
+    runtimeOnly 'com.h2database:h2'
+
+    // Lombok (Procesador de Anotaciones y Provided)
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+
+    // === DEPENDENCIAS DE PRUEBA ===
+
+    // Pruebas Unitarias y de Integración (Incluye JUnit 5)
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

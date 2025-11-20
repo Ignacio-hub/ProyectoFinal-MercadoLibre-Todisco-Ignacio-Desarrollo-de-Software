@@ -91,7 +91,6 @@ public class MutantDetector {
                 return false;
             }
         }
-
         return count == SEQUENCE_LENGTH;
     }
 }
