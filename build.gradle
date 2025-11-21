@@ -1,14 +1,21 @@
 plugins {
-    // 1. Plugins principales de Spring Boot y Java
+    // 1. Core Build Plugins: Declarados primero.
     id 'java'
-    id 'org.springframework.boot' version '3.5.7' // Versión del parent de tu POM
-    id 'io.spring.dependency-management' version '1.1.5' // Para gestionar versiones de Spring
+    id 'org.springframework.boot' version '3.5.7'
+    id 'io.spring.dependency-management' version '1.1.5'
+    id 'jacoco' // Plugin de Cobertura
 }
 
-group = 'com.mercadolibre'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17' // Versión de Java de tu POM
+// 2. Project Properties y Toolchain (Diferente estilo de declaración de Java)
+group = 'com.mercadolibre.mutant' // Nombre del grupo modificado
+version = '1.0.0-SNAPSHOT'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17) // Usa toolchain para Java 17
+    }
+}
 
+// Configuración de Annotation Processors (Lombok)
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -20,28 +27,66 @@ repositories {
 }
 
 dependencies {
-    // === DEPENDENCIAS DE PRODUCCIÓN ===
 
-    // Nivel 2: API REST
+    // Core Web y Validación
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    // Nivel 3: Persistencia JPA
+    // Persistencia y H2
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
-    // Nivel 3: Base de Datos H2
     runtimeOnly 'com.h2database:h2'
 
-    // Lombok (Procesador de Anotaciones y Provided)
+    // Documentación (Swagger/OpenAPI)
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
+    // Lombok (Procesador de Anotaciones)
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-
-    // === DEPENDENCIAS DE PRUEBA ===
-
-    // Pruebas Unitarias y de Integración (Incluye JUnit 5)
+    // Core Testing Stack (incluye JUnit 5)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // Lombok para test scope
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
+// Configuración de la Tarea de Pruebas
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport // Asegura que el reporte se genere
 }
+
+// Tarea de Reporte de Jacoco
+jacocoTestReport {
+    // No usa 'dependsOn test' explícito (lo hereda)
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    afterEvaluate {
+        // Exclusiones necesarias para el Code Coverage exacto
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/ExamenMercadoLibreApplication.class', // Excluye la clase principal
+                    '**/config/**',
+                    '**/*$*' // Excluye clases internas (Lombok)
+            ])
+        }))
+    }
+}
+
+// Tarea de Verificación de Cobertura (80% mínimo)
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'CLASS' // Verifica el cumplimiento por Clase (cambiado del default)
+            limit {
+                counter = 'LINE' // Se enfoca en líneas de código cubiertas
+                minimum = 0.80 // El requisito del 80%
+            }
+        }
+    }
+}
+
+tasks.jar { enabled = true }
+bootJar { enabled = true }

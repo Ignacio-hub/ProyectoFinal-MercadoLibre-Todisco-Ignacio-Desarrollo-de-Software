@@ -1,6 +1,6 @@
 package com.mercadolibre.examen_mercadolibre.service;
 
-import com.mercadolibre.examen_mercadolibre.model.StatsResponse;
+import com.mercadolibre.examen_mercadolibre.dto.StatsResponse;
 import com.mercadolibre.examen_mercadolibre.repository.DnaRecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
