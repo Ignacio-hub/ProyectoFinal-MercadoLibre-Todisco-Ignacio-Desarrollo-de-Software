@@ -1,6 +1,6 @@
 package com.mercadolibre.examen_mercadolibre.controller;
 
-import com.mercadolibre.examen_mercadolibre.exception.InvalidDnaSequenceException;
+
 import com.mercadolibre.examen_mercadolibre.dto.DnaRequest;
 import com.mercadolibre.examen_mercadolibre.dto.StatsResponse;
 import com.mercadolibre.examen_mercadolibre.service.MutantService;
@@ -37,8 +37,8 @@ public class MutantController {
             @ApiResponse(responseCode = "403", description = "ADN analizado: NO ES MUTANTE (cero o una secuencia)"),
             @ApiResponse(responseCode = "400", description = "Error: Secuencia de ADN inválida (no es NxN o contiene caracteres no permitidos)", content = @Content)
     })  @PostMapping("/mutant")
-    public ResponseEntity<Void> checkMutant(@RequestBody DnaRequest request) {
-try {
+    public ResponseEntity<Void> checkMutant(@Validated @RequestBody DnaRequest request) {
+
         String[] dnaArray = request.getDna().toArray(new String[0]);
 
         boolean isMutant = mutantService.isMutant(dnaArray);
@@ -48,11 +48,8 @@ try {
         } else {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN); // 403 Forbidden
         }
-     } catch(InvalidDnaSequenceException ex){
-        // Captura la excepción lanzada por el detector y devuelve 400 Bad Request
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // 400 BAD REQUEST
-    }
-}@Operation(summary = "Obtener estadísticas de ADN",
+     }
+@Operation(summary = "Obtener estadísticas de ADN",
             description = "Retorna el número de verificaciones de mutantes, humanos y el ratio (mutantes/humanos).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Estadísticas obtenidas correctamente")
