@@ -33,3 +33,26 @@ Se añadieron requisitos de persistencia de datos y reporte de estadísticas.
 **Persistencia:** Utilización de una base de datos H2 para almacenar los ADN verificados. Se implementó una estrategia para guardar solo un registro por ADN (utilizando el Hash SHA-256 como clave).
 **Estadísticas:** Creación del servicio GET /stats.
 **Salida de /stats:** Devuelve un JSON que contiene count_mutant_dna, count_human_dna y el ratio (mutantes/humanos).
+
+🏗️**Arquitectura del Proyecto**
+El proyecto sigue una arquitectura en capas sólida para asegurar que cada parte del código tenga una única responsabilidad. Esto facilita el testing, el mantenimiento y las optimizaciones.
+
+**1. Controller:** Capa de Presentación. Recibe peticiones HTTP (POST /mutant, GET /stats) y retorna respuestas HTTP (200, 403, 400).
+
+**2. Service:** Lógica de Negocio y Orquestación. Controla el flujo de la aplicación: calcula el Hash, verifica la caché y delega al Detector.
+
+**3. Detector:** Lógica Core (Algoritmo). Contiene el algoritmo puro y optimizado (isMutant) para buscar las secuencias en la matriz de ADN.
+
+**4. DTO:** Contrato de Datos. Define la estructura de los datos que entran y salen de la API (JSON). Incluye las validaciones custom (@ValidDnaSequence).
+
+**5. Entity:** Modelo de Persistencia. Mapea los objetos Java a las tablas de la base de datos (ORM). Contiene el campo dnaHash como clave primaria para la deduplicación.
+
+**6. Repository:** Acceso a Datos (JPA). Proporciona la interfaz para ejecutar consultas y operaciones básicas contra la base de datos (p. ej., countByIsMutant, existsByDnaHash).
+
+**7	Configuración:** Capa Transversal (Infraestructura). Contiene la configuración necesaria para la documentación interactiva de la API con Swagger/OpenAPI.
+
+**Docker:** El Dockerfile es esencial para este proyecto porque empaqueta y estandariza la Mutant Detector API para su despliegue, asegurando que la aplicación (Spring Boot con Gradle) se ejecute de manera idéntica en cualquier entorno. Este proceso utiliza una Construcción Multi-Etapa para optimizar el tamaño de la imagen final.
+
+**Para construir la imagen:** se utiliza el comando **docker build -t mutant-detector-api**
+**Para correr el contenedor y hacer la API accesible:** Se utiliza el comando **docker run -d -p 8080:8080 --name mutant-api mutant-detector-api**
+
