@@ -2,7 +2,7 @@
 # ETAPA 1: BUILDER (Compilación)
 # Utiliza una imagen con JDK para compilar el código.
 # ==============================================================================
-FROM openjdk:17-jdk-slim AS builder
+FROM eclipse-temurin:17-jdk-slim AS builder
 
 # 1. Actualiza el índice
 RUN apk update
