@@ -36,7 +36,7 @@ RUN --mount=type=cache,target=/root/.gradle ./gradlew bootJar -x test --no-daemo
 # ETAPA 2: RUNTIME (Ejecución - Imagen Ligera)
 # Utiliza una imagen con solo el JRE para el ambiente de producción.
 # ==============================================================================
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17-jre-slim
 
 # Exponer el puerto de la aplicación (8080 o el puerto configurado en application.properties)
 EXPOSE 8080
