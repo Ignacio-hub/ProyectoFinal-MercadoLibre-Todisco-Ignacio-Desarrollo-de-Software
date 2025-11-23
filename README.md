@@ -47,7 +47,7 @@ El proyecto sigue una arquitectura en capas sólida para asegurar que cada parte
 **Java Development Kit (JDK):** Versión 17 o superior.
 **Git:** Para clonar el repositorio.
 
-**Paso 1: Clonar el Repositorio** git clone https://github.com/Ignacio-hub/ProyectoFinal_MercadoLibre.git cd ProyectoFinal_MercadoLibre
+**Paso 1: Clonar el Repositorio** git clone https://github.com/Ignacio-hub/ProyectoFinal-MercadoLibre-Todisco-Ignacio-Desarrollo-de-Software.git cd ProyectoFinal_MercadoLibre
 
 **Paso 2: Compilar y Ejecutar la Aplicación** El proyecto utiliza el wrapper de Gradle para su ejecución.
 **Windows:** gradlew.bat bootRun
