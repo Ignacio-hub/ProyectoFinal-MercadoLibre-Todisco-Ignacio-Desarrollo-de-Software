@@ -52,3 +52,18 @@ El proyecto sigue una arquitectura en capas sólida para asegurar que cada parte
 **Paso 2: Compilar y Ejecutar la Aplicación** El proyecto utiliza el wrapper de Gradle para su ejecución.
 **Windows:** gradlew.bat bootRun
 **Mac/Linux:** ./gradlew bootRun
+
+🧪 **Ejecución de Tests y Cobertura**
+Para ejecutar todos los tests y generar el reporte de cobertura con JaCoCo (que verifica el requisito de Code Coverage > 80%):
+**Windows (PowerShell):**	.\gradlew.bat clean test
+**Mac/Linux:**	./gradlew clean test
+
+**gradlew test:** Solo ejecuta los tests (más rápido, usa resultados previos).
+**gradlew clean test:** Asegura que el entorno de ejecución esté limpio, lo cual es ideal para generar reportes de cobertura precisos y evitar fallos extraños por archivos antiguos.
+
+🌐 **Uso de la API (Endpoints)**
+Cuando el programa este corriendo podemos acceder a los siguientes sitios para comprobar que funciona correctamente
+📄 **Acceso a la Documentación y la Base de Datos**
+**Swagger UI:** http://localhost:8080/swagger-ui.html
+**H2 Console:** http://localhost:8080/h2-console
+
