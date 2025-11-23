@@ -1,54 +1,53 @@
-# ==============================================================================
-# ETAPA 1: BUILDER (Compilación)
-# Utiliza una imagen con JDK para compilar el código.
-# ==============================================================================
-FROM eclipse-temurin:17-jdk-slim AS builder
+# ========================================
+# ETAPA 1: BUILD (Compilación)
+# CORRECCIÓN: Usando el repositorio 'temurin' para evitar "not found"
+# ========================================
+FROM temurin:21-jdk-alpine as build
 
-# 1. Actualiza el índice
-RUN apk update
+# Alpine usa 'apk' como gestor de paquetes. Como temurin ya trae el JDK,
+# solo necesitamos actualizar el índice y luego se instala OpenJDK si no lo trae.
+# Las imágenes de Temurin generalmente ya incluyen lo necesario, pero estas líneas 
+# aseguran que se encuentre la toolchain.
+RUN apk update && apk add openjdk21
 
-# 2. Instala el paquete de Java
-RUN apk add openjdk17
-# Establece el directorio de trabajo dentro del contenedor
+# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Copia los archivos de configuración de Gradle para que Docker pueda cachear la descarga de dependencias
+# Copiar archivos de configuración y wrapper para caching.
 COPY gradlew .
 COPY gradle/wrapper/ gradle/wrapper/
 COPY build.gradle .
-COPY settings.gradle .
+# Si tienes settings.gradle
+# COPY settings.gradle .
 
-# Copia solo los archivos fuente que inician el build (opcional, pero mejora el caché)
-# Ejecuta un 'fake build' para descargar dependencias si es posible
+# Ejecuta un 'fake build' para descargar dependencias y aprovechar el cache de Gradle
+# Se monta el volumen de cache de Gradle para la descarga de dependencias
 RUN --mount=type=cache,target=/root/.gradle ./gradlew dependencies --no-daemon
 
-# Copia el código fuente completo
+# Copiar el código fuente completo
 COPY src src
 
-# Da permisos de ejecución al wrapper (necesario en Linux/Docker)
+# Dar permisos de ejecución al script gradlew
 RUN chmod +x ./gradlew
 
-# Compila el proyecto y genera el JAR final.
-# Usamos el cache de Gradle y omitimos los tests para acelerar el build en Docker.
+# Compilar y generar el JAR ejecutable. Omitimos tests para un build más rápido.
 RUN --mount=type=cache,target=/root/.gradle ./gradlew bootJar -x test --no-daemon
 
-# ==============================================================================
-# ETAPA 2: RUNTIME (Ejecución - Imagen Ligera)
-# Utiliza una imagen con solo el JRE para el ambiente de producción.
-# ==============================================================================
-FROM eclipse-temurin:17-jre-slim
+# ========================================
+# ETAPA 2: RUNTIME (Ejecución)
+# CORRECCIÓN: Usando el repositorio 'temurin' para el JRE ligero
+# ========================================
+FROM temurin:21-jre-alpine
 
-# Exponer el puerto de la aplicación (8080 o el puerto configurado en application.properties)
-EXPOSE 8080
-
-# Establece el directorio de trabajo
+# Definir el directorio de trabajo
 WORKDIR /app
 
-# Copia el JAR generado desde la etapa 'builder'
-# Asumimos que tu JAR se genera con el formato {group}-{version}.jar (ej: mutant-1.0.0-SNAPSHOT.jar)
-# Usamos comodín para hacerlo más robusto al cambiar la versión.
-COPY --from=builder /app/build/libs/*-1.0.0-SNAPSHOT.jar app.jar
+# Documentar que la aplicación escucha en el puerto 8080
+EXPOSE 8080
+
+# Copiar el JAR generado de la etapa 'build'. Usamos comodín para el nombre del archivo.
+# ASUME que la versión es *-1.0.0-SNAPSHOT.jar. Ajustar si el nombre final es diferente.
+COPY --from=build /app/build/libs/*-1.0.0-SNAPSHOT.jar ./app.jar
 
 # Comando de ejecución de la aplicación
-# Usa el puerto configurado en application.properties, pero aquí podemos sobrescribir el puerto
 ENTRYPOINT ["java", "-jar", "app.jar"]
