@@ -1,49 +1,52 @@
 # ========================================
 # ETAPA 1: BUILD (Compilación)
-# USANDO MCR (Microsoft Container Registry) - La fuente más estable para Temurin Alpine
 # ========================================
-FROM mcr.microsoft.com/openjdk/jdk:17-alpine AS build
+# Imagen base ligera de Alpine Linux (~5MB) para compilar el código
+# Se usa "as build" para nombrar esta etapa y referenciarla después
+FROM eclipse-temurin:17-jdk-alpine as build
 
-# La imagen ya es Alpine y ya trae el JDK 17. Las líneas 'apk' son redundantes y las eliminamos
-# para evitar errores de conflictos o de sintaxis al instalar paquetes ya existentes.
 
-# 1. Establecer el directorio de trabajo
-WORKDIR /app
+# Actualizar el índice de paquetes de Alpine
+RUN apk update
 
-# 2. Copiar archivos de configuración de Gradle para el caching de dependencias
-COPY gradlew .
-COPY gradle/wrapper/ gradle/wrapper/
-COPY build.gradle .
-# Si usas settings.gradle, descomenta:
-# COPY settings.gradle .
+# Instalar OpenJDK 21 necesario para compilar código Java/Spring Boot
+# Alpine usa 'apk' como gestor de paquetes (equivalente a apt/yum)
+RUN apk add openjdk21
 
-# 3. Dar permisos de ejecución al script gradlew
+# Copiar TODO el código fuente del proyecto al contenedor
+# Primer '.' = origen (directorio actual del host)
+# Segundo '.' = destino (directorio de trabajo del contenedor)
+COPY . .
+
+# Dar permisos de ejecución al script gradlew (Gradle Wrapper)
+# Necesario porque los permisos pueden perderse al copiar archivos
 RUN chmod +x ./gradlew
 
-# 4. Descargar dependencias (usando caché)
-RUN --mount=type=cache,target=/root/.gradle ./gradlew dependencies --no-daemon
-
-# 5. Copiar el código fuente completo
-COPY src src
-
-# 6. Compilar y generar el JAR ejecutable (omitiendo tests)
-RUN --mount=type=cache,target=/root/.gradle ./gradlew bootJar -x test --no-daemon
+# Ejecutar Gradle para compilar y generar el JAR ejecutable
+# bootJar: tarea de Spring Boot que genera un "fat JAR" con todas las dependencias
+# --no-daemon: no usar proceso Gradle en segundo plano (mejor para Docker)
+# Resultado: build/libs/Mutantes-1.0-SNAPSHOT.jar
+RUN ./gradlew bootJar --no-daemon
 
 # ========================================
-# ETAPA 2: RUNTIME (Ejecución - Imagen Ligera)
-# USANDO MCR (Microsoft Container Registry) para JRE ligero
+# ETAPA 2: RUNTIME (Ejecución)
 # ========================================
-FROM mcr.microsoft.com/openjdk/jre:17-alpine
+# Imagen base con SOLO el runtime de Java (sin herramientas de compilación)
+# Esto reduce el tamaño de la imagen final de ~500MB a ~200MB
+FROM eclipse-temurin:21-jre-alpine
 
-# 1. Definir el directorio de trabajo
-WORKDIR /app
-
-# 2. Documentar que la aplicación escucha en el puerto 8080
+# Documentar que la aplicación escucha en el puerto 8080
+# IMPORTANTE: esto NO abre el puerto, solo es documentación
+# El puerto se mapea con: docker run -p 8080:8080
 EXPOSE 8080
 
-# 3. Copiar el JAR generado de la etapa 'build'
-# Tu versión es '1.0.0-SNAPSHOT'
-COPY --from=build /app/build/libs/*-1.0.0-SNAPSHOT.jar ./app.jar
+# Copiar el JAR generado en la ETAPA 1 (build) a la imagen final
+# --from=build: tomar archivo de la etapa "build" anterior
+# Solo se copia el JAR, NO el código fuente ni herramientas de compilación
+# Esto mantiene la imagen final pequeña y segura
+COPY --from=build ./build/libs/ExamenMercado-1.0-SNAPSHOT.jar ./app.jar
 
-# 4. Comando de ejecución de la aplicación
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Comando que se ejecuta cuando el contenedor inicia
+# ENTRYPOINT (no CMD) asegura que siempre se ejecute la aplicación
+# ["java", "-jar", "app.jar"]: formato exec (preferido sobre shell)
+ENTRYPOINT  ["java", "-jar", "app.jar"]
