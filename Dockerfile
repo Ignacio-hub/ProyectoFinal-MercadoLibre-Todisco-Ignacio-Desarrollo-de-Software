@@ -2,7 +2,7 @@
 # ETAPA 1: BUILDER (Compilación)
 # CORRECCIÓN: Usamos la imagen TEMURIN basada en UBUNTU FOCAL (estable)
 # ========================================
-FROM eclipse-temurin:17-jdk-focal AS build
+FROM eclipse-temurin:17-jre-focal
 
 # 1. Establecer el directorio de trabajo
 WORKDIR /app
