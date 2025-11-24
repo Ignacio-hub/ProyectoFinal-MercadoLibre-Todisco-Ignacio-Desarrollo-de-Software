@@ -23,9 +23,9 @@ RUN chmod +x ./gradlew
 # Ejecuta la tarea 'bootJar'
 # Si quieres ver más detalles del error, podrías probar localmente sin el "-x test" para que Gradle imprima la razón.
 RUN ./gradlew clean bootJar -x test
-
+RUN find build/libs -name '*-SNAPSHOT.jar' ! -name '*-plain.jar' -exec mv {} app.jar \;
 # Define el nombre y la ruta del JAR resultante
-ARG JAR_FILE=build/libs/*.jar
+ARG JAR_FILE=app.jar
 
 
 # ----------------------------------------------------------------------------------
