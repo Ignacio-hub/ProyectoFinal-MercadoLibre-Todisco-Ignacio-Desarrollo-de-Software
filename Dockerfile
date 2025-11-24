@@ -1,43 +1,34 @@
-# ========================================
-# ETAPA 1: BUILDER (Compilación)
-# CORRECCIÓN: Usamos la imagen TEMURIN basada en UBUNTU FOCAL (estable)
-# ========================================
-FROM eclipse-temurin:17-jre-focal
+# ----------------------------------------------------------------------------------
+# ETAPA 1: BUILD (Compilación)
+# ----------------------------------------------------------------------------------
+FROM eclipse-temurin:17-jdk-focal AS builder
 
-# 1. Establecer el directorio de trabajo
 WORKDIR /app
 
-# 2. Copiar archivos de configuración de Gradle para el caching de dependencias
-COPY gradlew .
-COPY gradle/wrapper/ gradle/wrapper/
-COPY build.gradle .
-# COPY settings.gradle .
+# Copia los archivos de configuración de Gradle y el código fuente.
+COPY build.gradle settings.gradle ./
+COPY src ./src
 
-# 3. Dar permisos de ejecución al script gradlew
-RUN chmod +x ./gradlew
+# Ejecuta la tarea 'bootJar' de Gradle para compilar el proyecto
+# y crear el JAR ejecutable.
+RUN ./gradlew clean bootJar -x test
 
-# 4. Copiar el código fuente completo
-COPY src src
+# Define el nombre y la ruta del JAR resultante para la siguiente etapa.
+ARG JAR_FILE=build/libs/*.jar
 
-# 5. Compilar y generar el JAR ejecutable:
-#    -x test: omite los tests.
-#    -x jacocoTestCoverageVerification: omite la verificación estricta de cobertura, evitando el error 1.
-RUN --mount=type=cache,target=/root/.gradle ./gradlew bootJar -x test -x jacocoTestCoverageVerification --no-daemon
 
-# ========================================
-# ETAPA 2: RUNTIME (Ejecución - Imagen Ligera)
-# CORRECCIÓN: Usamos la versión JRE basada en Debian (focal)
-# ========================================
+# ----------------------------------------------------------------------------------
+# ETAPA 2: RUN (Ejecución/Producción)
+# ----------------------------------------------------------------------------------
 FROM eclipse-temurin:17-jre-focal
 
-# 1. Definir el directorio de trabajo
 WORKDIR /app
 
-# 2. Documentar que la aplicación escucha en el puerto 8080
+# Copia el JAR compilado desde la etapa 'builder' a la imagen final.
+COPY --from=builder /app/${JAR_FILE} app.jar
+
+# Define el comando que se ejecutará al iniciar el contenedor.
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app/app.jar"]
+
+# Expón el puerto que usa tu aplicación (ej. 8080).
 EXPOSE 8080
-
-# 3. Copiar el JAR generado en la ETAPA 1 (build)
-COPY --from=build /app/build/libs/*-1.0.0-SNAPSHOT.jar ./app.jar
-
-# 4. Comando de ejecución de la aplicación
-ENTRYPOINT ["java", "-jar", "app.jar"]
