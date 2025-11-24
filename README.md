@@ -13,7 +13,7 @@ Un ADN es considerado mutante si se encuentran más de una secuencia de cuatro l
 **Descripción del Proyecto**
 La API cumple con los tres niveles del desafío:
 
-**Nivel 1:** El objetivo principal fue desarrollar un algoritmo eficiente que implemente la función boolean isMutant(String[] dna).
+###**Nivel 1:** El objetivo principal fue desarrollar un algoritmo eficiente que implemente la función boolean isMutant(String[] dna).
 
 **Entrada:** Un array de Strings que representan una matriz cuadrada (NxN) con las bases nitrogenadas (A, T, C, G).
 **Regla de Mutación:** El algoritmo debe devolver true si encuentra más de una secuencia de cuatro letras iguales de forma horizontal, vertical u oblicua.
