@@ -1,6 +1,6 @@
-#🧬 **API Detector de Mutantes**
+🧬 **API Detector de Mutantes**
 Proyecto Final MercadoLibre
-##🎯 **Objetivo del Proyecto**
+🎯 **Objetivo del Proyecto**
 Este proyecto es una API REST desarrollada en Spring Boot para resolver el desafío de detección de mutantes de Magneto. La API implementa un algoritmo eficiente para determinar si una secuencia de ADN es mutante basándose en la repetición de bases nitrogenadas.
 Un ADN es considerado mutante si se encuentran más de una secuencia de cuatro letras idénticas (A, T, C, G) de forma horizontal, vertical u oblicua (diagonal).
 
@@ -10,7 +10,7 @@ Un ADN es considerado mutante si se encuentran más de una secuencia de cuatro l
 **Materia:** Desarrollo de Software
 **Año:** 3er Año
 
-##**Descripción del Proyecto**
+**Descripción del Proyecto**
 La API cumple con los tres niveles del desafío:
 
 ###**Nivel 1:** El objetivo principal fue desarrollar un algoritmo eficiente que implemente la función boolean isMutant(String[] dna).
