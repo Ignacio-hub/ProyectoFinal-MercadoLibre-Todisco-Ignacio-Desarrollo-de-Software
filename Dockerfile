@@ -23,7 +23,7 @@ RUN chmod +x ./gradlew
 # Ejecuta la tarea 'bootJar'
 # Si quieres ver más detalles del error, podrías probar localmente sin el "-x test" para que Gradle imprima la razón.
 RUN ./gradlew clean bootJar -x test
-RUN find build/libs -name '*-SNAPSHOT.jar' ! -name '*-plain.jar' -exec mv {} app.jar \;
+
 # Define el nombre y la ruta del JAR resultante
 ARG JAR_FILE=app.jar
 
@@ -37,7 +37,7 @@ FROM eclipse-temurin:17-jre-focal
 WORKDIR /app
 
 # Copia el JAR compilado desde la etapa 'builder'
-COPY --from=builder /app/${JAR_FILE} app.jar
+COPY --from=builder /app/build/libs/${JAR_FILE} /app/${JAR_FILE}
 
 # Define el comando de inicio (usando la configuración simplificada que solicitaste)
 ENTRYPOINT ["java","-jar","/app/app.jar"]

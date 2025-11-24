@@ -82,9 +82,10 @@ jacocoTestCoverageVerification {
 
 
 tasks.jar {
-    enabled = true
+    enabled = false
 }
 
 bootJar {
+    archiveFileName = "app.jar"
     enabled = true
 }
