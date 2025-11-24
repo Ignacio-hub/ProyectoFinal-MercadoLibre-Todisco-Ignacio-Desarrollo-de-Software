@@ -1,6 +1,5 @@
 package com.mercadolibre.examen_mercadolibre.service;
 
-import com.mercadolibre.examen_mercadolibre.detector.MutantDetector;
 import com.mercadolibre.examen_mercadolibre.entity.DnaRecord;
 import com.mercadolibre.examen_mercadolibre.repository.DnaRecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;

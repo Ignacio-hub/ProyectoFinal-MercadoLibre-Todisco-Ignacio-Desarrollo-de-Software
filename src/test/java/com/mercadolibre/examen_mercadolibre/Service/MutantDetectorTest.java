@@ -1,6 +1,6 @@
-package com.mercadolibre.examen_mercadolibre.Detector;
+package com.mercadolibre.examen_mercadolibre.Service;
 
-import com.mercadolibre.examen_mercadolibre.detector.MutantDetector;
+import com.mercadolibre.examen_mercadolibre.service.MutantDetector;
 import com.mercadolibre.examen_mercadolibre.exception.InvalidDnaSequenceException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

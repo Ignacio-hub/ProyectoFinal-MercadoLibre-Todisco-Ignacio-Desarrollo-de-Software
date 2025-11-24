@@ -1,4 +1,4 @@
-package com.mercadolibre.examen_mercadolibre.detector;
+package com.mercadolibre.examen_mercadolibre.service;
 
 import com.mercadolibre.examen_mercadolibre.exception.InvalidDnaSequenceException;
 import org.springframework.stereotype.Component;
