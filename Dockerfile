@@ -45,4 +45,4 @@ EXPOSE 8080
 COPY --from=build /app/build/libs/*-1.0.0-SNAPSHOT.jar ./app.jar
 
 # 4. Comando de ejecución de la aplicación
-ENTRYPOINT ["java", "-Dspring.h2.console.settings.web-allow-others=true" , "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
