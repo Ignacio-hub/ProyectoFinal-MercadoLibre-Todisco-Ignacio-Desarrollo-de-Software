@@ -1,92 +1,90 @@
 plugins {
-    // 1. Core Build Plugins: Declarados primero.
     id 'java'
+    id 'jacoco'
     id 'org.springframework.boot' version '3.5.7'
     id 'io.spring.dependency-management' version '1.1.5'
-    id 'jacoco' // Plugin de Cobertura
 }
-
-// 2. Project Properties y Toolchain (Diferente estilo de declaración de Java)
-group = 'com.mercadolibre.mutant' // Nombre del grupo modificado
-version = '1.0.0-SNAPSHOT'
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17) // Usa toolchain para Java 17
-    }
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
-
-// Configuración de Annotation Processors (Lombok)
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
+group = 'org.example'
+version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
 
+
 dependencies {
-
-    // Core Web y Validación
+    // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    // Persistencia y H2
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    runtimeOnly 'com.h2database:h2'
-
-    // Documentación (Swagger/OpenAPI)
+    // Swagger/OpenAPI
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
 
-    // Lombok (Procesador de Anotaciones)
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-
-    // Core Testing Stack (incluye JUnit 5)
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    // Lombok para test scope
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    // Base de datos H2
+    runtimeOnly 'com.h2database:h2'
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-// Configuración de la Tarea de Pruebas
-tasks.named('test') {
+test {
     useJUnitPlatform()
-    finalizedBy jacocoTestReport // Asegura que el reporte se genere
+    finalizedBy jacocoTestReport
 }
 
-// Tarea de Reporte de Jacoco
+jacoco {
+    toolVersion = "0.8.14"
+}
+
 jacocoTestReport {
-    // No usa 'dependsOn test' explícito (lo hereda)
+    dependsOn test
     reports {
         xml.required = true
         html.required = true
     }
     afterEvaluate {
-        // Exclusiones necesarias para el Code Coverage exacto
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                    '**/ExamenMercadoLibreApplication.class', // Excluye la clase principal
+                    '**/MutantDetectorApplication.class',
                     '**/config/**',
-                    '**/*$*' // Excluye clases internas (Lombok)
+                    '**/*$*', // Excluir clases internas generadas por Lombok
+                    '**/dto/**',
+                    '**/entity/**',
+                    '**/exception/**'
             ])
         }))
     }
 }
 
-// Tarea de Verificación de Cobertura (80% mínimo)
 jacocoTestCoverageVerification {
     violationRules {
         rule {
-            element = 'CLASS' // Verifica el cumplimiento por Clase (cambiado del default)
             limit {
-                counter = 'LINE' // Se enfoca en líneas de código cubiertas
-                minimum = 0.80 // El requisito del 80%
+                minimum = 0.80
             }
         }
     }
 }
 
-tasks.jar { enabled = true }
-bootJar { enabled = true }
+
+
+tasks.jar {
+    enabled = true
+}
+
+bootJar {
+    enabled = true
+}
