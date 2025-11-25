@@ -1,18 +1,17 @@
 package com.mercadolibre.examen_mercadolibre.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
+import java.time.Instant;
 
 @Entity
 @Table(name = "dna_record")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+
 public class DnaRecord {
 
     @Id
@@ -24,4 +23,18 @@ public class DnaRecord {
 
     @Column(name = "dna_sequence", length = 5000)
     private String dnaSequence;
+
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
+
+    public DnaRecord(String dnaHash, boolean isMutant, String dnaSequence) {
+        this.dnaHash = dnaHash;
+        this.isMutant = isMutant;
+        this.dnaSequence = dnaSequence;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = Instant.now();
+    }
 }
