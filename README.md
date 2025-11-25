@@ -115,7 +115,3 @@ Cuando el programa esté corriendo, podemos acceder a los siguientes sitios para
 | **User Name** | `sa` |
 | **Password** | (Dejar vacio) |
 
-![Diagrama de Secuencia Completo](Diagrama de secuencia/Diagrama de Secuencia.png)
-
-**[Ver Código Fuente PlantUML](Diagrama de secuencia/Codigo de PlantUML)**
-
