@@ -1,0 +1,90 @@
+@startuml
+title Flujo Completo de la API (Detección y Estadísticas)
+
+actor Cliente
+participant MutantController <<Controller>>
+participant DnaRequestValidation <<Validator>>
+participant MutantService <<Service>>
+participant MutantDetector <<Core Algorithm>>
+database DnaRecordRepository <<JPA Repository>>
+
+autonumber
+
+== 1. POST /mutant: Detección y Caché ==
+
+Cliente -> MutantController: POST /mutant (DnaRequest)
+activate MutantController
+
+note over MutantController, DnaRequestValidation: @Validated invoca @ValidDnaSequence
+MutantController -> DnaRequestValidation: validate(dna)
+activate DnaRequestValidation
+DnaRequestValidation --> MutantController: OK / Exception (400)
+deactivate DnaRequestValidation
+
+MutantController -> MutantService: isMutant(dnaArray)
+activate MutantService
+
+MutantService -> MutantService: calculateHash(dna)
+note right: SHA-256
+
+MutantService -> DnaRecordRepository: existsByDnaHash(hash)
+activate DnaRecordRepository
+DnaRecordRepository --> MutantService: exists? (boolean)
+deactivate DnaRecordRepository
+
+alt **Cache Hit** (exists = true)
+    MutantService -> DnaRecordRepository: findById(hash)
+    activate DnaRecordRepository
+    DnaRecordRepository --> MutantService: DnaRecord{isMutant}
+    deactivate DnaRecordRepository
+    note left: Se omite la llamada al Detector.
+else **Cache Miss** (exists = false)
+    MutantService -> MutantDetector: isMutant(dnaArray)
+    activate MutantDetector
+    MutantDetector --> MutantService: isMutantResult (true/false)
+    deactivate MutantDetector
+
+    MutantService -> DnaRecordRepository: save(DnaRecord{hash, result})
+    activate DnaRecordRepository
+    DnaRecordRepository --> MutantService: Saved Record
+    deactivate DnaRecordRepository
+end
+
+MutantService --> MutantController: isMutantResult
+deactivate MutantService
+
+alt **Resultado: Mutante**
+    MutantController --> Cliente: 200 OK
+else **Resultado: Humano**
+    MutantController --> Cliente: 403 Forbidden
+end
+deactivate MutantController
+
+== 2. GET /stats: Obtención de Estadísticas ==
+
+Cliente -> MutantController: GET /stats
+activate MutantController
+
+MutantController -> MutantService: getDnaStats()
+activate MutantService
+
+MutantService -> DnaRecordRepository: countByIsMutantTrue()
+activate DnaRecordRepository
+DnaRecordRepository --> MutantService: countMutantDna
+deactivate DnaRecordRepository
+
+MutantService -> DnaRecordRepository: countByIsMutantFalse()
+activate DnaRecordRepository
+DnaRecordRepository --> MutantService: countHumanDna
+deactivate DnaRecordRepository
+
+MutantService -> MutantService: calculateRatio(mutants, humans)
+note right: ratio = mutants / humans
+
+MutantService --> MutantController: StatsResponse
+deactivate MutantService
+
+MutantController --> Cliente: 200 OK (StatsResponse JSON)
+deactivate MutantController
+
+@enduml
