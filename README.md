@@ -69,3 +69,8 @@ Cuando el programa este corriendo podemos acceder a los siguientes sitios para c
 **H2 Console:** http://localhost:8080/h2-console
 **URL Render:** https://proyectofinal-mercadolibre-todisco.onrender.com/h2-console
 
+**Datos Para Ingresar a la Base de Datos**
+**JDBC URL:** jdbc:h2:mem:testdb
+**User Name:** sa
+**Password:** (Dejar vacio)
+
