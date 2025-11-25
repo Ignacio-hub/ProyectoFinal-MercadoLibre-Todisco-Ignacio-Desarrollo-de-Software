@@ -9,9 +9,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Documented
-@Constraint(validatedBy = ValidDnaSequenceValidator.class) // <-- Conecta la anotación con su lógica
-@Target({ElementType.FIELD, ElementType.PARAMETER}) // <-- Se puede usar en campos y parámetros
-@Retention(RetentionPolicy.RUNTIME) // <-- Disponible en tiempo de ejecución
+@Constraint(validatedBy = ValidDnaSequenceValidator.class)
+@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
 public @interface ValidDnaSequence {
 
     String message() default "La secuencia de ADN no es válida: debe ser una matriz NxN (mínimo 4x4) y contener solo A, T, C, G.";

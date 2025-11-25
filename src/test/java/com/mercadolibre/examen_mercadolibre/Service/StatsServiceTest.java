@@ -22,59 +22,50 @@ class StatsServiceTest {
     @InjectMocks
     private StatsService statsService;
 
-    // ==============================================================================
-    // CASOS DE RATIO
-    // ==============================================================================
 
     @Test
     @DisplayName("Debe calcular el ratio correctamente (10 mutantes / 100 humanos = 0.1)")
     void getDnaStats_StandardCalculation_ShouldReturnCorrectRatio() {
-        // Arrange
+
         long mutantCount = 10;
         long humanCount = 100;
         when(dnaRecordRepository.countByIsMutantTrue()).thenReturn(mutantCount);
         when(dnaRecordRepository.countByIsMutantFalse()).thenReturn(humanCount);
         double expectedRatio = 0.1;
 
-        // Act
         StatsResponse response = statsService.getDnaStats();
 
-        // Assert
         assertEquals(mutantCount, response.getCountMutantDna());
         assertEquals(humanCount, response.getCountHumanDna());
-        assertEquals(expectedRatio, response.getRatio(), 0.0001); // El delta permite errores de punto flotante
+        assertEquals(expectedRatio, response.getRatio(), 0.0001);
     }
 
     @Test
     @DisplayName("Debe calcular el ratio correctamente (50 mutantes / 50 humanos = 1.0)")
     void getDnaStats_RatioOne_ShouldReturnOne() {
-        // Arrange
+
         long count = 50;
         when(dnaRecordRepository.countByIsMutantTrue()).thenReturn(count);
         when(dnaRecordRepository.countByIsMutantFalse()).thenReturn(count);
         double expectedRatio = 1.0;
 
-        // Act
         StatsResponse response = statsService.getDnaStats();
 
-        // Assert
         assertEquals(expectedRatio, response.getRatio(), 0.0001);
     }
 
     @Test
     @DisplayName("Debe manejar la división por cero (0 humanos) retornando 0.0")
     void getDnaStats_ZeroHumans_ShouldReturnZero() {
-        // Arrange
+
         long mutantCount = 10;
         long humanCount = 0;
         when(dnaRecordRepository.countByIsMutantTrue()).thenReturn(mutantCount);
         when(dnaRecordRepository.countByIsMutantFalse()).thenReturn(humanCount);
         double expectedRatio = 0.0;
 
-        // Act
         StatsResponse response = statsService.getDnaStats();
 
-        // Assert
         assertEquals(expectedRatio, response.getRatio(), 0.0001);
         assertEquals(mutantCount, response.getCountMutantDna());
         assertEquals(humanCount, response.getCountHumanDna());
@@ -83,17 +74,48 @@ class StatsServiceTest {
     @Test
     @DisplayName("Debe retornar 0.0 cuando hay 0 mutantes y 100 humanos")
     void getDnaStats_ZeroMutants_ShouldReturnZero() {
-        // Arrange
+
         long mutantCount = 0;
         long humanCount = 100;
         when(dnaRecordRepository.countByIsMutantTrue()).thenReturn(mutantCount);
         when(dnaRecordRepository.countByIsMutantFalse()).thenReturn(humanCount);
         double expectedRatio = 0.0;
 
-        // Act
         StatsResponse response = statsService.getDnaStats();
 
-        // Assert
+        assertEquals(expectedRatio, response.getRatio(), 0.0001);
+    }
+
+
+    @Test
+    @DisplayName("05. Debe manejar el caso de BD vacía (0 mutantes / 0 humanos = 0.0)")
+    void getDnaStats_EmptyDatabase_ShouldReturnZero() {
+
+        long mutantCount = 0;
+        long humanCount = 0;
+        when(dnaRecordRepository.countByIsMutantTrue()).thenReturn(mutantCount);
+        when(dnaRecordRepository.countByIsMutantFalse()).thenReturn(humanCount);
+        double expectedRatio = 0.0;
+
+        StatsResponse response = statsService.getDnaStats();
+
+        assertEquals(expectedRatio, response.getRatio(), 0.0001);
+        assertEquals(0, response.getCountMutantDna());
+        assertEquals(0, response.getCountHumanDna());
+    }
+
+    @Test
+    @DisplayName("06. Debe calcular el ratio con números grandes (100 mutantes / 1000 humanos = 0.1)")
+    void getDnaStats_LargeNumbers_ShouldReturnCorrectRatio() {
+
+        long mutantCount = 100;
+        long humanCount = 1000;
+        when(dnaRecordRepository.countByIsMutantTrue()).thenReturn(mutantCount);
+        when(dnaRecordRepository.countByIsMutantFalse()).thenReturn(humanCount);
+        double expectedRatio = 0.1;
+
+        StatsResponse response = statsService.getDnaStats();
+
         assertEquals(expectedRatio, response.getRatio(), 0.0001);
     }
 }

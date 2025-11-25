@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,17 +19,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/")
+@RequiredArgsConstructor
 @Tag(name = "Detector de Mutantes", description = "API para verificar si un ADN pertenece a un mutante o un humano.")
 public class MutantController {
 
     private final MutantService mutantService;
     private final StatsService statsService;
-
-    @Autowired
-    public MutantController(MutantService mutantService, StatsService statsService) {
-        this.mutantService = mutantService;
-        this.statsService = statsService;
-    }
 
     @Operation(summary = "Verificar si un ADN es mutante",
             description = "Analiza una secuencia de ADN. Retorna 200 si es mutante (más de 1 secuencia de 4 letras iguales) o 403 si es humano (0 o 1 secuencia).") // <-- NUEVO
@@ -44,9 +40,9 @@ public class MutantController {
         boolean isMutant = mutantService.isMutant(dnaArray);
 
         if (isMutant) {
-            return new ResponseEntity<>(HttpStatus.OK); // 200 OK
+            return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN); // 403 Forbidden
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
      }
 @Operation(summary = "Obtener estadísticas de ADN",

@@ -17,8 +17,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.assertj.core.api.Assertions.assertThat; // AssertJ
 import static org.hamcrest.Matchers.is;
-@SpringBootTest // Carga el contexto completo de Spring Boot (incluyendo H2)
-@AutoConfigureMockMvc // Configura MockMvc para simular peticiones HTTP
+@SpringBootTest
+@AutoConfigureMockMvc
 class MutantControllerTest {
 
     @Autowired
@@ -45,6 +45,36 @@ class MutantControllerTest {
 
         assertThat(repository.count()).isEqualTo(1L);
         assertThat(repository.countByIsMutantTrue()).isEqualTo(1L);
+    }
+    @Test
+    void postMutant_InvalidCharacters_Returns400BadRequest() throws Exception {
+
+        String invalidCharDna = "{\"dna\":[\"ATGC\",\"CAGT\",\"TTAT\",\"AGAX\"]}";
+
+        mockMvc.perform(post("/mutant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidCharDna))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.error", is("Bad Request - DNA Validation Error")));
+
+
+        assertThat(repository.count()).isEqualTo(0L);
+    }
+    @Test
+    void postMutant_InvalidStructure_Returns400BadRequest() throws Exception {
+
+        String nonNxNDna = "{\"dna\":[\"ATGC\", \"CAG\", \"TTAT\", \"AGAC\"]}";
+
+        mockMvc.perform(post("/mutant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(nonNxNDna))
+                .andExpect(status().isBadRequest()) // Verifica 400 Bad Request
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.error", is("Bad Request - DNA Validation Error")));
+
+
+        assertThat(repository.count()).isEqualTo(0L);
     }
 
     @Test
@@ -86,8 +116,61 @@ class MutantControllerTest {
 
         mockMvc.perform(get("/stats"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.count_mutant_dna", is(1))) // 1 Mutante
-                .andExpect(jsonPath("$.count_human_dna", is(2))) // 2 Humanos
-                .andExpect(jsonPath("$.ratio", is(0.5))); // 1 / 2 = 0.5
+                .andExpect(jsonPath("$.count_mutant_dna", is(1)))
+                .andExpect(jsonPath("$.count_human_dna", is(2)))
+                .andExpect(jsonPath("$.ratio", is(0.5)));
+    }
+
+    @Test
+    void postMutant_SmallMatrixIsMutant_Returns200AndSaves() throws Exception {
+        // Dos secuencias horizontales en matriz 4x4
+        String smallMutantDna = "{\"dna\":[\"AAAA\",\"CTGA\",\"GGGG\",\"TCAA\"]}";
+
+        mockMvc.perform(post("/mutant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(smallMutantDna))
+                .andExpect(status().isOk());
+
+        assertThat(repository.countByIsMutantTrue()).isEqualTo(1L);
+    }
+
+    @Test
+    void postMutant_SmallMatrixIsHuman_Returns403AndSaves() throws Exception {
+
+        String smallHumanDna = "{\"dna\":[\"ATGC\",\"ATGA\",\"ATGC\",\"TCAA\"]}";
+
+        mockMvc.perform(post("/mutant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(smallHumanDna))
+                .andExpect(status().isForbidden());
+
+        assertThat(repository.count()).isEqualTo(1L);
+    }
+
+    @Test
+    void getStats_EmptyDatabase_ReturnsZeros() throws Exception {
+
+
+        mockMvc.perform(get("/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count_mutant_dna", is(0)))
+                .andExpect(jsonPath("$.count_human_dna", is(0)))
+                .andExpect(jsonPath("$.ratio", is(0.0)));
+    }
+
+    @Test
+    void getStats_OnlyMutantsNoHumans_ReturnsValidRatio() throws Exception {
+
+        String mutantDna1 = "{\"dna\":[\"ATGCGA\",\"CAGTGC\",\"TTATGT\",\"AGAAGG\",\"CCCCTA\",\"TCACTG\"]}";
+        mockMvc.perform(post("/mutant").contentType(MediaType.APPLICATION_JSON).content(mutantDna1));
+
+        String mutantDna2 = "{\"dna\":[\"ATAAAA\",\"AATGCC\",\"ATATGT\",\"AAAAGG\",\"CCCCTA\",\"TCACTG\"]}";
+        mockMvc.perform(post("/mutant").contentType(MediaType.APPLICATION_JSON).content(mutantDna2));
+
+        mockMvc.perform(get("/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count_mutant_dna", is(2)))
+                .andExpect(jsonPath("$.count_human_dna", is(0)))
+                .andExpect(jsonPath("$.ratio", is(0.0)));
     }
 }

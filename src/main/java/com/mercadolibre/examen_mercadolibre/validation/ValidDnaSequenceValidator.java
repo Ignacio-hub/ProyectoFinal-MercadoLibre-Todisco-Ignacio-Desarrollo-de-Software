@@ -19,17 +19,16 @@ public class ValidDnaSequenceValidator implements ConstraintValidator<ValidDnaSe
 
         final int N = dna.size();
 
-        // 1. Matriz NxN y tamaño mínimo (N >= 4)
         if (N < MIN_N) {
             return false;
         }
 
         for (String row : dna) {
-            // 2. Verificar que cada fila sea NxN
+
             if (row == null || row.length() != N) {
                 return false;
             }
-            // 3. Verificar caracteres válidos (A, T, C, G)
+
             if (!VALID_CHARS_PATTERN.matcher(row).matches()) {
                 return false;
             }

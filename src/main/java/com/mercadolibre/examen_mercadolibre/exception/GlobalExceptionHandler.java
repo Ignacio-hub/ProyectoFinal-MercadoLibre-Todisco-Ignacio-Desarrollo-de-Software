@@ -26,9 +26,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, status);
     }
 
-    /**
-     * Maneja cualquier otra RuntimeException no capturada, devolviendo 500 Internal Server Error.
-     */
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleGenericRuntimeException(
             RuntimeException ex, WebRequest request) {

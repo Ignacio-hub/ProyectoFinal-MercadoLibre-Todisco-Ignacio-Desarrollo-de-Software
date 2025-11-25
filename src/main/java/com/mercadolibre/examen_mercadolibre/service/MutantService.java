@@ -2,6 +2,7 @@ package com.mercadolibre.examen_mercadolibre.service;
 
 import com.mercadolibre.examen_mercadolibre.entity.DnaRecord;
 import com.mercadolibre.examen_mercadolibre.repository.DnaRecordRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.security.MessageDigest;
@@ -9,16 +10,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 @Service
+@RequiredArgsConstructor
 public class MutantService {
 
     private final MutantDetector mutantDetector;
     private final DnaRecordRepository dnaRecordRepository;
-
-    @Autowired
-    public MutantService(MutantDetector mutantDetector, DnaRecordRepository dnaRecordRepository) {
-        this.mutantDetector = mutantDetector;
-        this.dnaRecordRepository = dnaRecordRepository;
-    }
 
     public boolean isMutant(String[] dna) {
 
